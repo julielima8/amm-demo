@@ -1,9 +1,6 @@
 import { network } from "hardhat";
 import { formatUnits, parseUnits } from "viem";
-
-const TOKEN_A_ADDRESS = "0x56b9B64430dF15A189326A63Fabe7eaDeF652B2A";
-const TOKEN_B_ADDRESS = "0xA2c868a189391c369635f2759DE273b19633Cb84";
-const AMM_ADDRESS = "0xcd63d4c4B7F541Ba541f44cE002193b2E96f3a16";
+import { ADDRESSES } from "../deployments.js";
 
 // INITIAL LIQUIDITY TO ADD
 const AMOUNT_A = "1000";
@@ -18,9 +15,9 @@ async function main() {
   console.log("Using account:", user);
 
   // Get typed contract instances
-  const tokenA = await viem.getContractAt("TokenA", TOKEN_A_ADDRESS);
-  const tokenB = await viem.getContractAt("TokenB", TOKEN_B_ADDRESS);
-  const amm = await viem.getContractAt("AMM", AMM_ADDRESS);
+  const tokenA = await viem.getContractAt("TokenA", ADDRESSES.sepolia.tokenA);
+  const tokenB = await viem.getContractAt("TokenB", ADDRESSES.sepolia.tokenB);
+  const amm = await viem.getContractAt("AMM", ADDRESSES.sepolia.amm);
 
   // Assume standard ERC-20 decimals = 18
   const decimalsA = await tokenA.read.decimals();
@@ -50,12 +47,12 @@ async function main() {
 
   // Approve AMM to spend tokens
   console.log("\nApproving TokenA...");
-  const approveAHash = await tokenA.write.approve([AMM_ADDRESS, amountA]);
+  const approveAHash = await tokenA.write.approve([ADDRESSES.sepolia.amm, amountA]);
   await publicClient.waitForTransactionReceipt({ hash: approveAHash });
   console.log("  TokenA approved:", approveAHash);
 
   console.log("Approving TokenB...");
-  const approveBHash = await tokenB.write.approve([AMM_ADDRESS, amountB]);
+  const approveBHash = await tokenB.write.approve([ADDRESSES.sepolia.amm, amountB]);
   await publicClient.waitForTransactionReceipt({ hash: approveBHash });
   console.log("  TokenB approved:", approveBHash);
 
