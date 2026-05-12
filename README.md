@@ -1,57 +1,75 @@
-# Sample Hardhat 3 Beta Project (`node:test` and `viem`)
+# AMM (Automated Market Maker)
 
-This project showcases a Hardhat 3 Beta project using the native Node.js test runner (`node:test`) and the `viem` library for Ethereum interactions.
+A simple constant-product AMM implementation in Solidity following the x*y=k formula, similar to Uniswap V2.
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+## Overview
 
-## Project Overview
+This contract allows users to:
+- **Add liquidity** to a token pair and receive LP tokens
+- **Remove liquidity** by burning LP tokens
+- **Swap** between two ERC20 tokens with a 0.3% fee
 
-This example project includes:
+## Key Features
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using [`node:test`](nodejs.org/api/test.html), the new Node.js native test runner, and [`viem`](https://viem.sh/).
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+- **Constant Product Formula**: Maintains the invariant `reserveA * reserveB = k`
+- **LP Tokens**: ERC20 tokens representing liquidity provider shares
+- **Slippage Protection**: Min output requirements on swaps
+- **0.3% Trading Fee**: Applied to all swaps (997/1000 fee factor)
+- **ReentrancyGuard**: Protection against reentrancy attacks
+- **SafeERC20**: Safe token transfer handling
 
-## Usage
+## Core Functions
+
+### `addLiquidity(uint256 amountA, uint256 amountB)`
+Deposit tokens to provide liquidity. Returns LP tokens proportional to your share of the pool.
+- First liquidity provider receives `sqrt(amountA * amountB)` LP tokens
+- Subsequent deposits must maintain the current reserve ratio
+
+### `removeLiquidity(uint256 lpAmount)`
+Burn LP tokens to withdraw your share of both tokens from the pool.
+
+### `swapAforB(uint256 amountAIn, uint256 minAmountBOut)`
+Swap token A for token B with slippage protection.
+
+### `swapBforA(uint256 amountBIn, uint256 minAmountAOut)`
+Swap token B for token A with slippage protection.
+
+### `getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)`
+Calculate output amount for a given input (includes 0.3% fee).
+
+### `getPrice()`
+Returns current price ratios: A per B and B per A (scaled by 1e18).
+
+## Getting Started
+
+### Deployment
+
+Deploy the AMM contract along with TokenA and TokenB using the provided deployment script:
+
+```bash
+npx hardhat run scripts/deploy.ts --network <network-name>
+```
+
+The deployment script will:
+1. Deploy TokenA
+2. Deploy TokenB
+3. Deploy the AMM contract with both token addresses
+4. Output all contract addresses
 
 ### Running Tests
 
-To run all the tests in the project, execute the following command:
+To run all tests in the project:
 
-```shell
+```bash
 npx hardhat test
 ```
 
-You can also selectively run the Solidity or `node:test` tests:
+You can also selectively run specific test suites:
 
-```shell
+```bash
+# Run Solidity tests only
 npx hardhat test solidity
+
+# Run Node.js tests only
 npx hardhat test nodejs
-```
-
-### Make a deployment to Sepolia
-
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
-
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
-```
-
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
-
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
 ```
