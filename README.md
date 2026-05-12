@@ -1,5 +1,5 @@
 # AMM (Automated Market Maker)
-
+Julie Lima and Matthew Lynch
 A simple constant-product AMM implementation in Solidity following the x*y=k formula, similar to Uniswap V2.
 
 ## Overview
